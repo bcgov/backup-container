@@ -1,8 +1,31 @@
 name: Publish Backup Container Images
+run-name: Publish Backup Container ${{ inputs.tag || github.event.release.tag_name }} Images
 
 on:
   release:
     types: [published, edited]
+
+  workflow_dispatch:
+    inputs:
+      ref:
+        description: 'Optional - The branch, tag or SHA to checkout.'
+        required: false
+        type: string
+      platforms:
+        description: 'Platforms - Comma separated list of the platforms to support.'
+        required: true
+        default: linux/amd64,linux/arm64
+        type: string
+
+  workflow_call:
+    inputs:
+      ref:
+        required: false
+        type: string
+      platforms:
+        required: true
+        default: linux/amd64,linux/arm64
+        type: string
 
 jobs:
   publish-image:
@@ -31,6 +54,8 @@ jobs:
     steps:
       - name: Check out the repo
         uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.ref || '' }}
 
       - name: Lowercase repo owner
         id: lowercase_repo_owner
@@ -41,9 +66,11 @@ jobs:
       - name: Build and publish the image
         uses: ./.github/actions/publish-image
         with:
+          ref: ${{ inputs.ref || '' }}
           registry: ghcr.io
           registry_username: ${{ github.actor }}
           registry_password: ${{ secrets.GITHUB_TOKEN }}
           dockerfile: ${{ matrix.dockerFile }}
           context: docker
           image_name: ${{ steps.lowercase_repo_owner.outputs.lowercase }}/${{ matrix.imageName }}
+          platforms: ${{ inputs.platforms || 'linux/amd64,linux/arm64' }}
