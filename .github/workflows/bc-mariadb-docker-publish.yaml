@@ -5,11 +5,14 @@ on:
     types: [published, edited]
 
 jobs:
-  docker:
+  publish-image:
     # Ensure this only runs on the main repository so we're not publishing images to other repositories.
     if: ${{ github.event.repository.full_name == 'bcgov/backup-container' }}
-
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+
     steps:
       - name: Check out the repo
         uses: actions/checkout@v4
@@ -27,4 +30,5 @@ jobs:
           registry_username: ${{ github.actor }}
           registry_password: ${{ secrets.GITHUB_TOKEN }}
           dockerfile: docker/Dockerfile_MariaDB
+          context: docker
           image_name: ${{ steps.lowercase_repo_owner.outputs.lowercase }}/backup-container-mariadb
