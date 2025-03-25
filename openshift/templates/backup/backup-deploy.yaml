@@ -239,15 +239,15 @@ parameters:
   - name: IMAGE_NAMESPACE
     displayName: Image Namespace
     description: The namespace of the OpenShift project containing the imagestream for the application.
-    value: bcgovimages
+    value: bcgov
   - name: "IMAGE_REGISTRY"
     description: "The base OpenShift docker registry"
     displayName: "Docker Image Registry"
     required: true
     # Set value to "docker-registry.default.svc:5000" if using OCP3
-    value: "docker.io"
+    value: "ghcr.io"
   - name: IMAGE_TAG
-    displayName: 
+    displayName:
     description: Image tag name, e.g. latest
     value: latest
   - name: TAG_NAME

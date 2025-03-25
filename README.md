@@ -22,14 +22,15 @@ _Table of Contents_
 
 <!-- TOC depthTo:2 -->
 
-- [Backup Container](#backup-container)
-  - [Supported Databases](#supported-databases)
+- [Introduction](#introduction)
+  - [Supported Databases \& Secondary Locations](#supported-databases--secondary-locations)
+    - [Databases](#databases)
+    - [Secondary Locations](#secondary-locations)
 - [Backup Container Options](#backup-container-options)
   - [Backups in OpenShift](#backups-in-openshift)
   - [Storage](#storage)
     - [Backup Storage Volume](#backup-storage-volume)
-      - [NFS Storage Backup and Retention Policy](#nfs-storage-backup-and-retention-policy)
-    - [Restore/Verification Storage Volume](#restoreverification-storage-volume)
+    - [Restore / Verification Storage Volume](#restore--verification-storage-volume)
     - [Storage Performance](#storage-performance)
   - [Deployment / Configuration](#deployment--configuration)
     - [backup.conf](#backupconf)
@@ -131,7 +132,7 @@ Ensure that the volume is large enough to accommodate your largest database. You
 
 ### Storage Performance
 
-Our PVC are supported by NetApp storage. It's important to note that the performance of the storage is not affected by the storage class chosen. 
+Our PVC are supported by NetApp storage. It's important to note that the performance of the storage is not affected by the storage class chosen.
 ## Deployment / Configuration
 
 Together, the scripts and templates provided in the [openshift](./openshift) directory will automatically deploy the `backup` app as described below. The [backup-deploy.overrides.sh](./openshift/backup-deploy.overrides.sh) script generates the deployment configuration necessary for the [backup.conf](config/backup.conf) file to be mounted as a ConfigMap by the `backup` container.
@@ -515,7 +516,7 @@ oc -n 599f0a-dev delete pvc/nrmsurveys-bkup-pvc pvc/backup-verification secret/n
 To clean up the image stream and build configuration
 
 ```bash
-oc -n 599f0a-dev delete buildconfig/nrmsurveys-bkup imagestream/nrmsurveys-bkup 
+oc -n 599f0a-dev delete buildconfig/nrmsurveys-bkup imagestream/nrmsurveys-bkup
 ```
 
 </details>
@@ -595,12 +596,12 @@ For customizing the configuration, go to: https://github.com/bcgov/helm-charts/t
 
 # Prebuilt Container Images
 
-Starting with v2.3.3, prebuilt container images are built and published with each release:
+Starting with v2.3.3, prebuilt container images are built and published with each release.  As of v2.10.1 the prebuilt images are published to the ghcr.
 
-- [bcgovimages/backup-container](https://hub.docker.com/r/bcgovimages/backup-container) (`PostgreSQL`)
-- [bcgovimages/backup-container-mongo](https://hub.docker.com/r/bcgovimages/backup-container-mongo)
-- [bcgovimages/backup-container-mssql](https://hub.docker.com/r/bcgovimages/backup-container-mssql)
-- [bcgovimages/backup-container-mariadb](https://hub.docker.com/r/bcgovimages/backup-container-mariadb)
+- [ghcr.io/bcgov/backup-container](https://github.com/bcgov/backup-container/pkgs/container/backup-container) (`PostgreSQL`)
+- [ghcr.io/bcgov/backup-container-mongo](https://github.com/bcgov/backup-container/pkgs/container/backup-container-mongo)
+- [ghcr.io/bcgov/backup-container-mssql](https://github.com/bcgov/backup-container/pkgs/container/backup-container-mssql)
+- [ghcr.io/bcgov/backup-container-mariadb](https://github.com/bcgov/backup-container/pkgs/container/backup-container-mariadb)
 
 # Postgres Base Version
 
