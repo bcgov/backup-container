@@ -33,12 +33,12 @@ parameters:
     displayName: "Docker Image Registry"
     required: true
     # Set value to "docker-registry.default.svc:5000" if using OCP3
-    value: "docker.io"
+    value: "ghcr.io"
   - name: "IMAGE_NAMESPACE"
     displayName: "Image Namespace"
     description: "The namespace of the OpenShift project containing the imagestream for the application."
     required: true
-    value: "bcgovimages"
+    value: "bcgov"
   - name: "TAG_NAME"
     displayName: "Environment TAG name"
     description: "The TAG name for this environment, e.g., dev, test, prod"
