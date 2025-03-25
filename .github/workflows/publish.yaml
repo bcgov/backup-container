@@ -1,0 +1,76 @@
+name: Publish Backup Container Images
+run-name: Publish Backup Container ${{ inputs.tag || github.event.release.tag_name }} Images
+
+on:
+  release:
+    types: [published, edited]
+
+  workflow_dispatch:
+    inputs:
+      ref:
+        description: 'Optional - The branch, tag or SHA to checkout.'
+        required: false
+        type: string
+      platforms:
+        description: 'Platforms - Comma separated list of the platforms to support.'
+        required: true
+        default: linux/amd64,linux/arm64
+        type: string
+
+  workflow_call:
+    inputs:
+      ref:
+        required: false
+        type: string
+      platforms:
+        required: true
+        default: linux/amd64,linux/arm64
+        type: string
+
+jobs:
+  publish-image:
+    # Ensure this only runs on the main repository so we're not publishing images to other repositories.
+    if: ${{ github.event.repository.full_name == 'bcgov/backup-container' }}
+
+    strategy:
+      fail-fast: false
+      matrix:
+        imageName: [backup-container, backup-container-mongo, backup-container-mariadb, backup-container-mssql]
+        include:
+          - imageName: backup-container
+            dockerFile: docker/Dockerfile
+          - imageName: backup-container-mongo
+            dockerFile: docker/Dockerfile_Mongo
+          - imageName: backup-container-mariadb
+            dockerFile: docker/Dockerfile_MariaDB
+          - imageName: backup-container-mssql
+            dockerFile: docker/Dockerfile_MSSQL
+
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - name: Check out the repo
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.ref || '' }}
+
+      - name: Lowercase repo owner
+        id: lowercase_repo_owner
+        uses: ASzc/change-string-case-action@v6
+        with:
+          string: ${{ github.repository_owner }}
+
+      - name: Build and publish the image
+        uses: ./.github/actions/publish-image
+        with:
+          ref: ${{ inputs.ref || '' }}
+          registry: ghcr.io
+          registry_username: ${{ github.actor }}
+          registry_password: ${{ secrets.GITHUB_TOKEN }}
+          dockerfile: ${{ matrix.dockerFile }}
+          context: docker
+          image_name: ${{ steps.lowercase_repo_owner.outputs.lowercase }}/${{ matrix.imageName }}
+          platforms: ${{ inputs.platforms || 'linux/amd64,linux/arm64' }}
