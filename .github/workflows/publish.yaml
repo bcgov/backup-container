@@ -1,4 +1,4 @@
-name: Backup Container Postgres - Image Publish
+name: Publish Backup Container Images
 
 on:
   release:
@@ -8,6 +8,21 @@ jobs:
   publish-image:
     # Ensure this only runs on the main repository so we're not publishing images to other repositories.
     if: ${{ github.event.repository.full_name == 'bcgov/backup-container' }}
+
+    strategy:
+      fail-fast: false
+      matrix:
+        imageName: [backup-container, backup-container-mongo, backup-container-mariadb, backup-container-mssql]
+        include:
+          - imageName: backup-container
+            dockerFile: docker/Dockerfile
+          - imageName: backup-container-mongo
+            dockerFile: docker/Dockerfile_Mongo
+          - imageName: backup-container-mariadb
+            dockerFile: docker/Dockerfile_MariaDB
+          - imageName: backup-container-mssql
+            dockerFile: docker/Dockerfile_MSSQL
+
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -29,6 +44,6 @@ jobs:
           registry: ghcr.io
           registry_username: ${{ github.actor }}
           registry_password: ${{ secrets.GITHUB_TOKEN }}
-          dockerfile: docker/Dockerfile
+          dockerfile: ${{ matrix.dockerFile }}
           context: docker
-          image_name: ${{ steps.lowercase_repo_owner.outputs.lowercase }}/backup-container
+          image_name: ${{ steps.lowercase_repo_owner.outputs.lowercase }}/${{ matrix.imageName }}
