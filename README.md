@@ -122,7 +122,7 @@ If you are utilizing S3 storage or the corporate S3 compatible storage, you may 
 
 To implement this, create a PVC using the the appropriate storage class and mount it to your pod at the `/backups` mount point. Or, if you're using the provided deployment template, update or override the `BACKUP_VOLUME_STORAGE_CLASS` parameter.
 
-For more detailed information, please visit the [DevHub](https://developer.gov.bc.ca/OCP4-Backup-and-Restore) page.
+For more detailed information, please visit the [DevHub](https://developer.gov.bc.ca/docs/default/component/platform-developer-docs/docs/automation-and-resiliency/netapp-backup-restore/) page.
 
 ### Restore / Verification Storage Volume
 
