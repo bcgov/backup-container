@@ -30,11 +30,12 @@ function onBackupDatabase(){
 
     export PGPASSWORD=${_password}
     
-    (
-      pg_dump -Fp -h "${_hostname}" ${_portArg} -U "${_username}" "${_database}"
-      pg_dumpall -h "${_hostname}" ${_portArg} -U "${_username}" --roles-only --no-role-passwords | \
-      sed "/^CREATE ROLE \"${_username}\";/d; /^CREATE ROLE postgres;/d; /^ALTER ROLE \"${_username}\" /d; /^ALTER ROLE postgres /d"
-    ) | gzip > "${_backupFile}"
+    pg_dump -Fp -h "${_hostname}" ${_portArg} -U "${_username}" "${_database}" | gzip > "${_backupFile}"
+
+    # Appead roles
+    pg_dumpall -h "${_hostname}" ${_portArg} -U "${_username}" --roles-only --no-role-passwords | \
+    sed "/^CREATE ROLE \"${_username}\";/d; /^CREATE ROLE postgres;/d; /^ALTER ROLE \"${_username}\" /d; /^ALTER ROLE postgres /d" | \
+    gzip >> "${_backupFile}"
 
     return ${PIPESTATUS[0]}
   )
