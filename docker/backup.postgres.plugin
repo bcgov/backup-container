@@ -29,15 +29,21 @@ function onBackupDatabase(){
     echoGreen "Backing up '${_hostname}${_port:+:${_port}}${_database:+/${_database}}' to '${_backupFile}' ..."
 
     export PGPASSWORD=${_password}
-    
+
     pg_dump -Fp -h "${_hostname}" ${_portArg} -U "${_username}" "${_database}" | gzip > "${_backupFile}"
+    _rtnCd=${?}
 
-    # Appead roles
-    pg_dumpall -h "${_hostname}" ${_portArg} -U "${_username}" --roles-only --no-role-passwords | \
-    sed "/^CREATE ROLE \"${_username}\";/d; /^CREATE ROLE postgres;/d; /^ALTER ROLE \"${_username}\" /d; /^ALTER ROLE postgres /d" | \
-    gzip >> "${_backupFile}"
+    set -o pipefail
+    if (( ${_rtnCd} == 0 )); then
+      # Append roles
+      pg_dumpall -h "${_hostname}" ${_portArg} -U "${_username}" --roles-only --no-role-passwords | \
+      sed "/^CREATE ROLE \"${_username}\";/d; /^CREATE ROLE postgres;/d; /^ALTER ROLE \"${_username}\" /d; /^ALTER ROLE postgres /d" | \
+      gzip >> "${_backupFile}"
+      _rtnCd=${?}
+    fi
+    set +o pipefail
 
-    return ${PIPESTATUS[0]}
+    return ${_rtnCd}
   )
 }
 
