@@ -1,5 +1,5 @@
 # This image provides a mongo installation from which to run backups
-FROM mongodb/mongodb-community-server:6.0.6-ubi8
+FROM mongodb/mongodb-community-server:7.0.28-ubi8
 
 ARG uid=998
 ARG user=mongod
