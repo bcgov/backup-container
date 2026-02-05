@@ -1,5 +1,5 @@
 # This image provides a postgres installation from which to run backups
-FROM --platform=linux/amd64 quay.io/fedora/postgresql-17:17
+FROM --platform=linux/amd64 quay.io/fedora/postgresql-18:18
 
 # Change timezone to PST for convenience
 ENV TZ=PST8PDT
