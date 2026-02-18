@@ -97,3 +97,6 @@ These extensions are not supported on the Fedora operating system. Which is used
 
 Note: Due to the ignore errors flag you will have to be diligent in verifying that that the restore process is working as expected with your database implementation.
 
+## Upgrading to use backup container with postgres 17 or 18
+
+If you have an existing backup container deployment for an earlier version of Postgres and you use Helm to upgrade to the container for Postgres 18, there may be some issues with the verification and restoration of backups. This can be fixed by installing a fresh container under a new name. The old backup container can be scaled down to zero pods.  The old backup PVCs can be kept until the old backups are no longer needed. Then safely deleted.
