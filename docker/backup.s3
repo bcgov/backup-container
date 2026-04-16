@@ -19,3 +19,22 @@ function s3Backup() {
 		mc cp "$db_backup" $minio_alias/$S3_BUCKET
 	fi
 }
+
+function s3PruneBackups() {
+	local minio_alias=minio_s3
+
+	if [ "$#" -eq 0 ]; then
+    	echo "No files to prune from S3 bucket ${S3_BUCKET}."
+  	fi
+
+	if [[ $S3_ENDPOINT ]]; then
+          
+		for file in "$@"; do
+		fileName=$(basename ${file})
+		if mc stat $minio_alias/$S3_BUCKET/${fileName} &> /dev/null; then
+			echoYellow "\nPruning ${fileName} from S3 bucket ${S3_BUCKET} ..."
+			mc rm --force $minio_alias/$S3_BUCKET/${fileName}
+		fi
+		done
+	fi
+}

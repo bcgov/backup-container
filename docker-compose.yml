@@ -30,6 +30,7 @@ services:
       S3_PASSWORD: secret00
       S3_ENDPOINT: http://minio:9000
       S3_BUCKET: backups
+      S3_PRUNE_BACKUPS: "true"
     volumes:
       - ./backups:/backups
       - ./config/backup-dev.conf:/conf/backup.conf

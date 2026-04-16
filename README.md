@@ -163,6 +163,7 @@ The following environment variables are defaults used by the `backup` app.
 | S3_PASSWORD                | No Default           | The password for the S3 compatible object store. This may also be referred to as the "Secret key" in AWS. |
 | S3_ENDPOINT                | None                 |  The AWS endpoint to use for S3 compatible object storage. For OpenShift minio use `http://minio-service:9000` |
 | S3_BUCKET                  | None                 | The bucket where you backups will be transferd to. |
+| S3_PRUNE_BACKUPS           | false                | Delete old backups from S3 bucket
 | PGDUTY_SVC_KEY             |                      | PagerDuty service integration key.                                                                                                         |
 | PGDUTY_URL                 |                      | PagerDuty events API url, the default url (the default url is https://events.pagerduty.com/generic/2010-04-15/create_event.json)                                                                                                         |
 | WEBHOOK_URL                |                      | The URL of the webhook endpoint to use for notifications. If not specified, the webhook integration feature is disabled. The default value in the deployment configuration is an empty value - not specified. |

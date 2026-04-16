@@ -138,6 +138,12 @@ function pruneBackups(){
 
         # Quietly delete any empty directories that are left behind ...
         find ${ROOT_BACKUP_DIR} -type d -empty -delete > /dev/null 2>&1
+
+        if [ "$S3_PRUNE_BACKUPS" = "true" ]; then
+          # Prune backups from s3 bucket if exists ...
+          mapfile -t filesArray <<< "${_filesToPrune}"
+          s3PruneBackups "${filesArray[@]}"
+        fi
       fi
     fi
   )
