@@ -143,6 +143,8 @@ function pruneBackups(){
           # Prune backups from s3 bucket if exists ...
           mapfile -t filesArray <<< "${_filesToPrune}"
           s3PruneBackups "${filesArray[@]}"
+        else
+          echoYellow "\nS3_PRUNE_BACKUPS is not set or false, skipping pruning backups from s3 bucket."
         fi
       fi
     fi
