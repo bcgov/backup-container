@@ -345,6 +345,12 @@ function listSettings(){
   else
     echo "- S3 endpoint: ${S3_ENDPOINT}"
   fi
+
+  if [ -z "${S3_PRUNE_BACKUPS}" ]; then
+    echo -e "- S3 prune backups: ${_notConfigured}"
+  else
+    echo "- S3 prune backups: ${S3_PRUNE_BACKUPS}"
+  fi
   
   if [ -z "${WEBHOOK_URL}" ]; then
     echo -e "- Webhook Endpoint: ${_notConfigured}"

@@ -8,6 +8,7 @@ export DEFAULT_PORT=${POSTGRESQL_PORT_NUM:-5432}
 export DATABASE_SERVICE_NAME=${DATABASE_SERVICE_NAME:-postgresql}
 export POSTGRESQL_DATABASE=${POSTGRESQL_DATABASE:-my_postgres_db}
 export TABLE_SCHEMA=${TABLE_SCHEMA:-public}
+export S3_PRUNE_BACKUPS=${S3_PRUNE_BACKUPS:-false}
 
 # Supports:
 # - daily
