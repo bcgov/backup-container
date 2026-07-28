@@ -24,8 +24,9 @@ function onBackupDatabase(){
     _database=$(getDatabaseName ${_databaseSpec})
     _port=$(getPort ${_databaseSpec})
     _portArg=${_port:+"-P ${_port}"}
-    _username=$(getUsername ${_databaseSpec})
-    _password=$(getPassword ${_databaseSpec})
+    _username=$(getLocalOrDBUsername ${_databaseSpec} ${_hostname})
+    _password=$(getLocalOrDBPassword ${_databaseSpec} ${_hostname})
+
     echoGreen "Backing up '${_hostname}${_port:+:${_port}}${_database:+/${_database}}' to '${_backupFile}' ..."
 
     MYSQL_PWD=${_password} mysqldump -h "${_hostname}" -u "${_username}" ${_portArg} "${_database}" | gzip > ${_backupFile}
@@ -52,11 +53,11 @@ function onRestoreDatabase(){
     _database=$(getDatabaseName ${_databaseSpec})
     _port=$(getPort ${flags} ${_databaseSpec})
     _portArg=${_port:+"-P ${_port}"}
-    _username=$(getUsername ${_databaseSpec})
-    _password=$(getPassword ${_databaseSpec})
+    _username=$(getLocalOrDBUsername ${_databaseSpec} ${_hostname})
+    _password=$(getLocalOrDBPassword ${_databaseSpec} ${_hostname})
+
     echo -e "Restoring '${_fileName}' to '${_hostname}${_port:+:${_port}}${_database:+/${_database}}' ...\n" >&2
 
-    
     # Restore
     gunzip -c "${_fileName}" | MYSQL_PWD=${_password} mysql -h ${_hostname} -u ${_username} ${_portArg} ${_database}
     _rtnCd=${PIPESTATUS[1]}
@@ -79,10 +80,10 @@ function onStartServer(){
     _databaseSpec=${1}
 
     # Start a local MariaDB instance
-    MYSQL_USER=$(getUsername "${_databaseSpec}") \
-    MYSQL_PASSWORD=$(getPassword "${_databaseSpec}") \
-    MYSQL_DATABASE=$(getDatabaseName "${_databaseSpec}") \
-    MYSQL_ROOT_PASSWORD=$(getPassword "${_databaseSpec}") \
+    MYSQL_USER=${MYSQL_USER:?"Missing MYSQL_USER"} \
+    MYSQL_PASSWORD=${MYSQL_PASSWORD:?"Missing MYSQL_PASSWORD"} \
+    MYSQL_DATABASE=${MYSQL_DATABASE:?"Missing MYSQL_DATABASE"} \
+    MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD:?"Missing MYSQL_ROOT_PASSWORD"} \
     run-mysqld >/dev/null 2>&1 &
   )
 }
@@ -131,8 +132,8 @@ function onPingDbServer(){
     _database=$(getDatabaseName ${_databaseSpec})
     _port=$(getPort ${flags} ${_databaseSpec})
     _portArg=${_port:+"-P ${_port}"}
-    _username=$(getUsername ${_databaseSpec})
-    _password=$(getPassword ${_databaseSpec})
+    _username=$(getLocalOrDBUsername ${_databaseSpec} ${_hostname})
+    _password=$(getLocalOrDBPassword ${_databaseSpec} ${_hostname})
 
     if MYSQL_PWD=${_password} mysql -h ${_hostname} -u ${_username} ${_portArg} ${_database} -e "SELECT 1;" >/dev/null 2>&1; then
       return 0
@@ -159,10 +160,11 @@ function onVerifyBackup(){
     _database=$(getDatabaseName ${_databaseSpec})
     _port=$(getPort -l ${_databaseSpec})
     _portArg=${_port:+"-P ${_port}"}
-    _username=$(getUsername ${_databaseSpec})
-    _password=$(getPassword ${_databaseSpec})
+    _username=$(getLocalOrDBUsername ${_databaseSpec} ${_hostname})
+    _password=$(getLocalOrDBPassword ${_databaseSpec} ${_hostname})
 
     debugMsg "backup.mariadb.plugin - onVerifyBackup"
+
     tables=$(MYSQL_PWD=${_password} mysql -h "${_hostname}" -u "${_username}" ${_portArg} "${_database}" -e "SHOW TABLES;")
     rtnCd=${?}
 
@@ -206,13 +208,41 @@ function onGetDbSize(){
     _database=$(getDatabaseName ${_databaseSpec})
     _port=$(getPort ${flags} ${_databaseSpec})
     _portArg=${_port:+"-P ${_port}"}
-    _username=$(getUsername ${_databaseSpec})
-    _password=$(getPassword ${_databaseSpec})
+    _username=$(getLocalOrDBUsername ${_databaseSpec} ${_hostname})
+    _password=$(getLocalOrDBPassword ${_databaseSpec} ${_hostname})
 
     MYSQL_PWD=${_password} mysql -h "${_hostname}" -u "${_username}" ${_portArg} "${_database}" -e "SELECT ROUND(SUM(data_length + index_length) / 1024 / 1024, 1) AS \"size in mb\" FROM information_schema.tables WHERE table_schema=\"${_database}\" GROUP BY table_schema;"
     
     echo ${size}
     return ${rtnCd}
+  )
+}
+
+function getLocalOrDBUsername(){
+  (
+    _databaseSpec=${1}
+    _localhost="127.0.0.1"
+    _hostname=${2}
+    if [ "$_hostname" == "$_localhost" ]; then
+      _username=${MYSQL_USER}
+    else
+      _username=$(getUsername ${_databaseSpec})
+    fi
+    echo ${_username}
+  )
+}
+
+function getLocalOrDBPassword(){
+  (
+    _databaseSpec=${1}
+    _localhost="127.0.0.1"
+    _hostname=${2}
+    if [ "$_hostname" == "$_localhost" ]; then
+      _password=${MYSQL_PASSWORD}
+    else
+      _password=$(getPassword ${_databaseSpec})
+    fi
+    echo ${_password}
   )
 }
 # =================================================================================================================
