@@ -5,6 +5,32 @@
 # -----------------------------------------------------------------------------------------------------------------
 export serverDataDirectory="/var/lib/pgsql/data"
 
+# Filters pg_dumpall --roles-only output from stdin.
+# Removes CREATE/ALTER ROLE statements for:
+# - the database user role passed as arg1
+# - postgres
+# Handles both quoted and unquoted role names (for example: role and "role").
+# All other lines are passed through unchanged.
+function filterRoleDump(){
+  local _targetRole=${1}
+
+  awk -v targetRole="${_targetRole}" '
+    {
+      # Role name is the third token in both CREATE ROLE and ALTER ROLE statements.
+      role = $3
+      sub(/;$/, "", role)
+      sub(/^"/, "", role)
+      sub(/"$/, "", role)
+    }
+
+    ($1 == "CREATE" || $1 == "ALTER") && $2 == "ROLE" && (role == targetRole || role == "postgres") {
+      next
+    }
+
+    { print }
+  '
+}
+
 function onBackupDatabase(){
   (
     local OPTIND
@@ -37,7 +63,8 @@ function onBackupDatabase(){
     if (( ${_rtnCd} == 0 )); then
       # Append roles
       pg_dumpall -h "${_hostname}" ${_portArg} -U "${_username}" --roles-only --no-role-passwords | \
-      sed "/^CREATE ROLE \"${_username}\";/d; /^CREATE ROLE postgres;/d; /^ALTER ROLE \"${_username}\" /d; /^ALTER ROLE postgres /d" | \
+      # Exclude DB user/postgres role DDL so restore into an initialized server is idempotent.
+      filterRoleDump "${_username}" | \
       gzip >> "${_backupFile}"
       _rtnCd=${?}
     fi
