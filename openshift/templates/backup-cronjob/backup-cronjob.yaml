@@ -2,7 +2,7 @@
 kind: "Template"
 apiVersion: "template.openshift.io/v1"
 metadata:
-  name: "{$JOB_NAME}-cronjob-template"
+  name: "${JOB_NAME}-cronjob-template"
   annotations:
     description: "Scheduled Task to perform a Database Backup"
     tags: "cronjob,backup"
@@ -250,4 +250,3 @@ objects:
             activeDeadlineSeconds: 1600
             dnsPolicy: "ClusterFirst"
             serviceAccountName: "${JOB_SERVICE_ACCOUNT}"
-            serviceAccount: "${JOB_SERVICE_ACCOUNT}"
