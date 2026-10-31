@@ -1,7 +1,6 @@
-version: '3.8'
 services:
   minio:
-    image: minio/minio
+    image: quay.io/minio/aistor/minio:latest
     volumes:
       - ./minio-data:/data
     ports:
@@ -12,9 +11,9 @@ services:
       MINIO_ROOT_PASSWORD: secret00
     command: server /data --console-address ":9001"
   postgresql:
-    image: postgres:12
+    image: docker.io/library/postgres:18
     volumes:
-      - ./pg-data:/var/lib/postgresql/data
+      - pg-data:/var/lib/postgresql
     ports:
       - 5432:5432
     environment:
@@ -51,3 +50,6 @@ services:
       - ./docker/backup.usage:/backup.usage
       - ./docker/backup.utils:/backup.utils
       - ./docker/backup.s3:/backup.s3
+
+volumes:
+  pg-data:
