@@ -29,6 +29,10 @@ RETRY_COUNT="${RETRY_COUNT:-30}"
 SLEEP_SECONDS="${SLEEP_SECONDS:-2}"
 DB_NAME="sakila"
 RESTORE_DB_NAME="sakila_restore"
+# Pin the Sakila scripts to a known-good upstream commit so the smoke test stays
+# deterministic while still allowing a one-variable update when a new version is qualified.
+SAKILA_DB_COMMIT="${SAKILA_DB_COMMIT:-e089a5b1ec9af0df7a9c6a5d47d49fa1736a4e84}"
+SAKILA_DB_BASE_URL="https://raw.githubusercontent.com/jOOQ/sakila/${SAKILA_DB_COMMIT}/postgres-sakila-db"
 
 # Run a docker compose subcommand. This keeps the script portable across
 # environments where the user sets COMPOSE_CMD to a custom command.
@@ -105,12 +109,12 @@ ensure_sakila_data() {
   table_count=$(run_sql_query "${DB_NAME}" "SELECT COUNT(*) FROM information_schema.tables WHERE table_schema='public' AND table_name='actor';")
 
   if [[ "${table_count}" == "0" ]]; then
-    echo "Loading Sakila schema..."
-    curl -fsSL https://raw.githubusercontent.com/jOOQ/sakila/main/postgres-sakila-db/postgres-sakila-schema.sql \
+    echo "Loading Sakila schema from commit ${SAKILA_DB_COMMIT}..."
+    curl -fsSL "${SAKILA_DB_BASE_URL}/postgres-sakila-schema.sql" \
       | run_compose exec -T -i postgresql psql -U postgres -d "${DB_NAME}"
 
-    echo "Loading Sakila data..."
-    curl -fsSL https://raw.githubusercontent.com/jOOQ/sakila/main/postgres-sakila-db/postgres-sakila-insert-data.sql \
+    echo "Loading Sakila data from commit ${SAKILA_DB_COMMIT}..."
+    curl -fsSL "${SAKILA_DB_BASE_URL}/postgres-sakila-insert-data.sql" \
       | run_compose exec -T -i postgresql psql -U postgres -d "${DB_NAME}"
   fi
 }
