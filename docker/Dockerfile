@@ -22,7 +22,8 @@ ADD https://github.com/$SOURCE_REPO/go-crond/releases/download/$GOCROND_VERSION/
 
 USER root
 
-RUN curl https://dl.min.io/client/mc/release/linux-amd64/mc -o /usr/bin/mc
+ARG MINIO_CLIENT_VERSION=RELEASE.2025-08-13T08-35-41Z
+RUN curl -fsSL "https://github.com/minio/mc/releases/download/${MINIO_CLIENT_VERSION}/mc.linux-amd64.${MINIO_CLIENT_VERSION}" -o /usr/bin/mc
 RUN chmod +x /usr/bin/mc
 RUN chmod +x /usr/bin/go-crond
 # ========================================================================================================
