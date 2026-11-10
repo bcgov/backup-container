@@ -31,6 +31,13 @@ function filterRoleDump(){
   '
 }
 
+# Backs up the database with role definitions before database SQL.
+# This archive order ensures roles exist before OWNER TO statements reference them
+# during a clean restore; it does not change the source database.
+# Starts the archive with compressed role definitions, using filterRoleDump to omit
+# CREATE/ALTER ROLE for the backup user and postgres, which already exist on restore.
+# Appends compressed database SQL without replacing the roles. gzip decompresses
+# these consecutive sections in order, creating roles before assigning ownership.
 function onBackupDatabase(){
   (
     local OPTIND
@@ -56,16 +63,17 @@ function onBackupDatabase(){
 
     export PGPASSWORD=${_password}
 
-    pg_dump -Fp -h "${_hostname}" ${_portArg} -U "${_username}" "${_database}" | gzip > "${_backupFile}"
+    set -o pipefail
+    
+    # Write filtered roles first.
+    pg_dumpall -h "${_hostname}" ${_portArg} -U "${_username}" --roles-only --no-role-passwords | \
+    filterRoleDump "${_username}" | \
+    gzip > "${_backupFile}"
     _rtnCd=${?}
 
-    set -o pipefail
     if (( ${_rtnCd} == 0 )); then
-      # Append roles
-      pg_dumpall -h "${_hostname}" ${_portArg} -U "${_username}" --roles-only --no-role-passwords | \
-      # Exclude DB user/postgres role DDL so restore into an initialized server is idempotent.
-      filterRoleDump "${_username}" | \
-      gzip >> "${_backupFile}"
+      # Append database SQL after the roles it references.
+      pg_dump -Fp -h "${_hostname}" ${_portArg} -U "${_username}" "${_database}" | gzip >> "${_backupFile}"
       _rtnCd=${?}
     fi
     set +o pipefail
