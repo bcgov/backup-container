@@ -22,6 +22,10 @@ ADD https://github.com/$SOURCE_REPO/go-crond/releases/download/$GOCROND_VERSION/
 
 USER root
 
+# PostgreSQL loads this hook after common.sh and before calling create_users.
+COPY postgresql-pre-start/00-existing-role.sh /opt/app-root/src/postgresql-pre-start/00-existing-role.sh
+RUN chmod 0444 /opt/app-root/src/postgresql-pre-start/00-existing-role.sh
+
 ARG MINIO_CLIENT_VERSION=RELEASE.2025-08-13T08-35-41Z
 RUN curl -fsSL "https://github.com/minio/mc/releases/download/${MINIO_CLIENT_VERSION}/mc.linux-amd64.${MINIO_CLIENT_VERSION}" -o /usr/bin/mc
 RUN chmod +x /usr/bin/mc
